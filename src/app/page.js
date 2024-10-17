@@ -1,95 +1,107 @@
-import Image from "next/image";
+"use client";
+import Link from "next/link";
 import styles from "./page.module.css";
+import React, { useState, useEffect } from "react";
 
 export default function Home() {
+  const [posts, setPosts] = useState([]);
+  const [currentPage, setCurrentPage] = useState(1);
+  const postsPerPage = 10;
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchPosts = async () => {
+      setLoading(true);
+      const res = await fetch("https://jsonplaceholder.typicode.com/todos");
+      const data = await res.json();
+      setPosts(data);
+      setTimeout(() => {
+        setLoading(false);
+      }, 2000);
+    };
+
+    fetchPosts();
+  }, []);
+
+  const indexOfLastPost = currentPage * postsPerPage;
+  const indexOfFirstPost = indexOfLastPost - postsPerPage;
+  const currentPosts = posts.slice(indexOfFirstPost, indexOfLastPost);
+
+  const handleNextPage = () => {
+    if (currentPage < Math.ceil(posts.length / postsPerPage)) {
+      setCurrentPage(currentPage + 1);
+    }
+  };
+
+  const handlePreviousPage = () => {
+    if (currentPage > 1) {
+      setCurrentPage(currentPage - 1);
+    }
+  };
+
   return (
     <div className={styles.page}>
-      <main className={styles.main}>
-        <Image
-          className={styles.logo}
-          src="https://nextjs.org/icons/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol>
-          <li>
-            Get started by editing <code>src/app/page.js</code>.
-          </li>
-          <li>Save and see your changes instantly.</li>
-        </ol>
-
-        <div className={styles.ctas}>
-          <a
-            className={styles.primary}
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className={styles.logo}
-              src="https://nextjs.org/icons/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-            className={styles.secondary}
-          >
-            Read our docs
-          </a>
+      <h1>Home Page</h1>
+      {loading ? (
+        <div className="loader"></div>
+      ) : (
+        <div>
+          {currentPosts.map((data) => {
+            return (
+              <div key={data.id}>
+                <div style={{ display: "flex" }}>
+                  <h3>{data.id})</h3>
+                  <h3 style={{ marginLeft: "10px" }}>{data.title}</h3>
+                  <h2>{data.completed === true ? "✅" : "❎"}</h2>
+                </div>
+              </div>
+            );
+          })}
         </div>
-      </main>
-      <footer className={styles.footer}>
-        <a
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
+      )}
+      <div style={{ marginTop: "20px" }}>
+        <button
+          onClick={handlePreviousPage}
+          disabled={currentPage === 1}
+          style={{ rotate: "90deg" }}
         >
-          <Image
-            aria-hidden
-            src="https://nextjs.org/icons/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
+          🔽
+        </button>
+        <span style={{ margin: "0 10px" }}>Page {currentPage}</span>
+        <button
+          style={{ rotate: "270deg" }}
+          onClick={handleNextPage}
+          disabled={currentPage === Math.ceil(posts.length / postsPerPage)}
         >
-          <Image
-            aria-hidden
-            src="https://nextjs.org/icons/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
+          🔽
+        </button>
+      </div>
+
+      <div style={{ marginTop: "20px" }}>
+        <Link
+          href="/about"
+          style={{
+            border: "1px solid white",
+            padding: "13px",
+            borderRadius: "20px",
+          }}
         >
-          <Image
-            aria-hidden
-            src="https://nextjs.org/icons/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
+          Go To About page
+        </Link>
+        <br />
+        <br />
+        <br />
+        <Link
+          href="/login"
+          style={{
+            border: "1px solid white",
+            padding: "13px",
+            borderRadius: "20px",
+          }}
+        >
+          Go To Login page
+        </Link>
+      </div>
     </div>
   );
 }
